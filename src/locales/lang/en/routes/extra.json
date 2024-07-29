@@ -1,0 +1,13 @@
+/*
+ * @FilePath: \vue-vben-admin\src\locales\lang\en\routes\extra.json
+ * @Author: zhangxin
+ * @Date: 2024-07-16 17:24:22
+ * @LastEditors: zhangxin
+ * @LastEditTime: 2024-07-16 17:29:04
+ * @Description: 
+ */
+{
+  "extra": "Extra",
+  "alarm": "Alarm",
+  "blinds": "Blinds"
+}
