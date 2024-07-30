@@ -2,6 +2,7 @@ import 'uno.css';
 import '@/design/index.less';
 import '@/components/VxeTable/src/css/index.scss';
 import 'ant-design-vue/dist/reset.css';
+import Antd from 'ant-design-vue';
 // Register icon sprite
 import 'virtual:svg-icons-register';
 
@@ -58,7 +59,7 @@ async function bootstrap() {
   // https://next.router.vuejs.org/api/#isready
   // await router.isReady();
 
-  app.mount('#app');
+  app.use(Antd).mount('#app');
 }
 
 bootstrap();
