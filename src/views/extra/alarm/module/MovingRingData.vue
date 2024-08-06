@@ -106,20 +106,20 @@
 </template>
 <script setup lang="ts">
   import dayjs from 'dayjs';
-  import { ref, h, onMounted } from 'vue';
-  import myTitle from '../component/my_title.vue';
+  import { ref, h, onMounted, onUnmounted } from 'vue';
+  import myTitle from '../../component/my_title.vue';
   import { SearchOutlined, SyncOutlined, CloudDownloadOutlined } from '@ant-design/icons-vue';
-  import * as echarts from 'echarts';
-  import { exportExcel } from '../utils/tool.js';
+  import { exportExcel } from '../../utils/tool';
 
+  import { detailOption, typeOption, timeOption, getChart } from '../../echarts/detail_echarts';
   // 定义告警详情图表颜色
-  let pieColor = ['#16b99a', '#4473ff', '#ff00f3', '#fb0065', '#ff941b'];
-  let richColor = {};
-
+  const pieColor = ['#16b99a', '#4473ff', '#ff00f3', '#fb0065', '#ff941b'];
+  // 配置告警详情文字的颜色样式
+  const richColor = {};
   // 定义下拉选择的文字
-  const levelValue = ref<String>('');
+  const levelValue = ref<string>('');
   // 定义下拉选择的列表
-  const levelOptions = ref<Array>([
+  const levelOptions = ref<any[]>([
     {
       value: 'one',
       label: '一级',
@@ -134,13 +134,13 @@
     },
   ]);
   // 定义下拉选择的方法
-  const levelChange = (value, option: Option | Array<Option>) => {
+  const levelChange = (value: String, option: any) => {
     levelValue.value = option.label;
   };
   // 定义告警时间
-  let timeValue = ref<String>('');
+  let timeValue = ref<string>('');
   // 定义告警其他
-  let otherValue = ref<String>('');
+  let otherValue = ref<string>('');
 
   // 分页数据
   // let pages = ref<Object>({
@@ -148,7 +148,7 @@
   //   pageSize: 10,
   // });
   // 总条数
-  let total = ref<Number>(100);
+  let total = ref<number>(100);
   // 分页方法
   // const pageChange1 = (page, pageSize) => {
   //   pages.value.current = page;
@@ -156,9 +156,9 @@
   // };
 
   // 定义列表数据
-  let dataSource = ref<Array>([]);
+  let dataSource = ref<any[]>([]);
   // 定义列表表头
-  let columns = ref<Array>([
+  let columns = ref<any[]>([
     {
       title: '告警所属数据中心',
       dataIndex: 'core',
@@ -203,7 +203,7 @@
   // 定义列表的id
   const scrollBox = ref(null);
   // 定义列表的高度
-  let scrollY = ref<Number>(770);
+  let scrollY = ref<number>(770);
 
   // 解析出告警详情图表的字体颜色
   const onpieColor = () => {
@@ -227,273 +227,24 @@
       align: 'left',
       padding: 4,
     };
+    detailOption.color = pieColor;
+    detailOption.series[0].label.rich = richColor;
+    detailChart = getChart('echarts_box1', detailOption);
   };
 
   // 定义告警详情图标数据
-  let detailChart = null;
-  let detailOption = {
-    tooltip: {
-      trigger: 'item',
-    },
-    color: pieColor,
-    legend: {
-      bottom: '3%',
-      left: 'center',
-    },
-    series: [
-      {
-        name: '告警详情',
-        type: 'pie',
-        radius: ['40%', '70%'],
-        avoidLabelOverlap: false,
-        labelLine: {
-          normal: {
-            show: true,
-            length: 20,
-            length2: 20,
-            lineStyle: {
-              width: 2,
-            },
-          },
-        },
-        label: {
-          normal: {
-            formatter: function (params) {
-              return (
-                '{b|' +
-                params.name +
-                '}\n{hr' +
-                params.dataIndex +
-                '|}\n{d' +
-                params.dataIndex +
-                '|' +
-                params.percent +
-                '%}'
-              );
-            },
-            rich: richColor,
-          },
-        },
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: 40,
-            fontWeight: 'bold',
-          },
-        },
+  let detailChart: any = null;
 
-        data: [
-          { value: 1048, name: '告警级别1' },
-          { value: 735, name: '告警级别2' },
-        ],
-      },
-    ],
-  };
   // 定义告警类型图标数据
-  let typeChart = null;
-  let typeOption = {
-    title: {
-      show: false,
-      text: '告警类型',
-    },
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow',
-      },
-    },
-    legend: {
-      data: ['图例1', '图例2'],
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      containLabel: true,
-    },
-    xAxis: {
-      type: 'value',
-      splitLine: {
-        show: false,
-      },
-      axisTick: {
-        show: false,
-      },
-      splitArea: {
-        show: false,
-      },
-    },
-    yAxis: {
-      type: 'category',
-      splitLine: {
-        show: false,
-      },
-      axisTick: {
-        show: false,
-      },
-      axisLine: {
-        show: false,
-      },
-      data: ['告警类型1', '告警类型2', '告警类型3', '告警类型4', '告警类型5'],
-    },
-    series: [
-      {
-        name: '图例1',
-        type: 'bar',
-        itemStyle: {
-          normal: {
-            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-              {
-                offset: 0,
-                color: '#b4e3e8',
-              },
-              {
-                offset: 1,
-                color: '#1ec5a7',
-              },
-            ]),
-          },
-        },
-        data: [18203, 23489, 29034, 104970, 131744],
-      },
-      {
-        name: '图例2',
-        type: 'bar',
-        itemStyle: {
-          normal: {
-            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-              {
-                offset: 0,
-                color: '#96c7f4',
-              },
-              {
-                offset: 1,
-                color: '#3794ea',
-              },
-            ]),
-          },
-        },
-        data: [19325, 23438, 31000, 121594, 134141],
-      },
-    ],
-  };
+  let typeChart: any = null;
+
   // 定义告警时间图标数据
-  let timeChart = null;
-  let timeOption = {
-    tooltip: {
-      trigger: 'axis',
-    },
-    legend: {
-      color: ['#16ea76', '#58c6ff', '#ff8256'],
-      data: ['xx', 'xxx', 'xxxx'],
-      left: 'center',
-      top: 'top',
+  let timeChart: any = null;
 
-      icon: 'circle',
-      itemWidth: 10,
-      itemHeight: 10,
-      textStyle: {
-        fontSize: '14',
-      },
-    },
-    // grid: {
-    //   top: 'middle',
-    //   left: '3%',
-    //   right: '4%',
-    //   bottom: '3%',
-    //   height: '80%',
-    //   containLabel: true,
-    // },
-    xAxis: {
-      type: 'category',
-      data: [
-        '01月',
-        '02月',
-        '03月',
-        '04月',
-        '05月',
-        '06月',
-        '07月',
-        '08月',
-        '09月',
-        '10月',
-        '11月',
-        '12月',
-      ],
-      axisLine: {
-        lineStyle: {
-          color: '#999',
-        },
-      },
-    },
-    yAxis: {
-      type: 'value',
-
-      splitLine: {
-        lineStyle: {
-          type: 'dashed',
-          color: '#DDD',
-        },
-      },
-      axisLine: {
-        show: false,
-        lineStyle: {
-          color: '#333',
-        },
-      },
-      nameTextStyle: {
-        color: '#999',
-      },
-      splitArea: {
-        show: false,
-      },
-    },
-    series: [
-      {
-        name: 'xx',
-        type: 'line',
-        data: [800, 900, 220, 130, 660, 289, 800, 900, 220, 130, 660, 289],
-        color: '#16ea76',
-        showSymbol: false,
-        lineStyle: {
-          normal: {
-            width: 4,
-          },
-        },
-        smooth: true,
-      },
-      {
-        name: 'xxx',
-        type: 'line',
-        showSymbol: false,
-        data: [123, 568, 111, 222, 123, 56, 123, 568, 111, 222, 123, 56],
-        color: '#58c6ff',
-        lineStyle: {
-          normal: {
-            width: 4,
-          },
-        },
-        smooth: true,
-      },
-      {
-        name: 'xxxx',
-        type: 'line',
-        color: '#ff8256',
-        showSymbol: false,
-        data: [125, 568, 25, 36, 784, 56, 125, 568, 25, 36, 784, 56],
-        lineStyle: {
-          normal: {
-            width: 4,
-          },
-        },
-        smooth: true,
-      },
-    ],
-  };
   // 定义下拉选择的文字
-  const yearValue = ref<String>('2023');
+  const yearValue = ref('2023');
   // 定义下拉选择的列表
-  const yearOptions = ref<Array>([
+  const yearOptions = ref<any[]>([
     {
       value: '2023',
       label: '2023年',
@@ -508,13 +259,14 @@
     },
   ]);
   // 定义下拉选择的方法
-  const yearChange = (value, option: Option | Array<Option>) => {
+  const yearChange = (value: String, option: any) => {
     yearValue.value = option.label;
+    timeOption.series[0].data = [289, 660, 130, 220, 900, 800, 800, 900, 220, 130, 660, 289];
     timeChart.setOption(timeOption);
   };
 
-  const downloadExcel = (data, filename = 'export.xlsx') => {
-    const titleArr = [
+  const downloadExcel = (data: any[], filename: string = 'export.xlsx') => {
+    const titleArr: any = [
       '序号',
       '告警所属数据中心',
       '告警信息',
@@ -533,8 +285,8 @@
       scrollY.value = scrollBox.value.offsetHeight - 100;
     }
     // 设置列表数据
-    let arr = [];
-    for (let i = 0; i < total.value; i++) {
+    let arr: any = [];
+    for (let i: any = 0; i < total.value; i++) {
       arr.push({
         key: i,
         core: 'xxxx数据中心',
@@ -551,14 +303,19 @@
 
     // 绘制告警详情图表
     onpieColor();
-    detailChart = echarts.init(document.getElementById('echarts_box1'));
-    detailChart.setOption(detailOption);
+
     // 绘制告警类型图表
-    typeChart = echarts.init(document.getElementById('echarts_box2'));
-    typeChart.setOption(typeOption);
+    typeChart = getChart('echarts_box2', typeOption);
     // 绘制告警时间图表
-    timeChart = echarts.init(document.getElementById('echarts_box3'));
-    timeChart.setOption(timeOption);
+    timeChart = getChart('echarts_box3', timeOption);
+  });
+  onUnmounted(() => {
+    detailChart.dispose();
+    typeChart.dispose();
+    timeChart.dispose();
+    detailChart = null;
+    typeChart = null;
+    timeChart = null;
   });
 </script>
 
@@ -594,7 +351,6 @@
           height: 48px;
 
           > div {
-            // background: #000;
             display: flex;
             align-items: center;
             justify-content: space-between;

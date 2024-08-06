@@ -72,34 +72,52 @@
         <myTitle :titleData="'xxx预测图表'" :titleType="'circular'" />
       </div>
       <div class="fault-box-bottom-chart">
-        <div class="previous"></div>
+        <div class="previous">
+          <LeftOutlined :style="iconStyle" />
+        </div>
         <div class="fault-box-bottom-chart-center">
           <div class="fault-box-bottom-chart-center-box" id="echarts_box4"> </div>
-          <div class="fault-box-bottom-chart-center-footer"> </div>
+          <div class="fault-box-bottom-chart-center-footer">
+            <myPag :current="current" :total="total" @previous-page="onPreviousPage" />
+          </div>
         </div>
-        <div class="next"></div>
+        <div class="next">
+          <RightOutlined :style="iconStyle" />
+        </div>
       </div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
-  import { ref, h, onMounted } from 'vue';
-  import myTitle from '../component/my_title.vue';
-  import description from '../component/description.vue';
-  import { SearchOutlined, SyncOutlined, CloudDownloadOutlined } from '@ant-design/icons-vue';
-  import * as echarts from 'echarts';
-  import 'echarts/lib/chart/line';
+  import { ref, h, onMounted, onUnmounted } from 'vue';
+  import myTitle from '../../component/my_title.vue';
+  import myPag from '../../component/my_pag.vue';
+  import description from '../../component/description.vue';
+  import { faultOption, getChart } from '../../echarts/detail_echarts';
+  import {
+    SearchOutlined,
+    SyncOutlined,
+    CloudDownloadOutlined,
+    LeftOutlined,
+    RightOutlined,
+  } from '@ant-design/icons-vue';
+  import { iconStyle } from '../../utils/my_style';
 
+  let current = ref<number>(1);
+  let total = ref<number>(6);
+  const onPreviousPage = (row: any) => {
+    current.value = row.current;
+  };
   // 定义时间粒度
-  let granularityValue = ref<String>('');
+  let granularityValue = ref<string>('');
   // 定义动态阀值信度
-  let reliabilityValue = ref<String>('');
+  let reliabilityValue = ref<string>('');
   // 定义时间范围
-  let scopeValue = ref<String>();
+  let scopeValue = ref<string>();
   // 定义下拉模型选择的文字
-  const modelValue = ref<String>('');
+  const modelValue = ref<string>('');
   // 定义下拉模型选择的列表
-  const modelOptions = ref<Array>([
+  const modelOptions = ref<any[]>([
     {
       value: 'one',
       label: '一级',
@@ -114,134 +132,19 @@
     },
   ]);
   // 定义下拉模型选择的方法
-  const modelChange = (value, option: Option | Array<Option>) => {
+  const modelChange = (value: string, option: any) => {
     modelValue.value = option.label;
   };
+  let faultChart: any = null;
 
-  let option = {
-    title: {
-      text: '示例置信图',
-    },
-    tooltip: {
-      show: true,
-      trigger: 'axis',
-      formatter: (params: Object | Array) => {
-        return params[0].seriesName + '\n' + params[0].value;
-      },
-    },
-    legend: {
-      data: ['基准线', '下限', '与上限的差值'],
-    },
-    xAxis: {
-      type: 'category',
-      data: [
-        '2023-01',
-        '2023-02',
-        '2023-03',
-        '2023-04',
-        '2023-05',
-        '2023-06',
-        '2023-07',
-        '2023-08',
-        '2023-09',
-        '2023-10',
-        '2023-11',
-        '2023-12',
-      ],
-    },
-    yAxis: {
-      type: 'value',
-    },
-    // [100, 140, 180, 160, 180, 140, 120, 100, 130, 110, 150, 140]
-    series: [
-      {
-        name: '基准线',
-        type: 'line',
-        smooth: true,
-        stack: '总量1',
-        label: {
-          normal: {
-            show: true,
-            position: 'top',
-          },
-        },
-        lineStyle: {
-          normal: {},
-        },
-        // data: [110, 142, 184, 165, 186, 143, 124, 105, 133, 111, 152, 137],
-        data: [100, 140, 180, 160, 180, 140, 120, 100, 130, 110, 150, 140],
-      },
-      {
-        name: '下限',
-        type: 'line',
-        stack: '总量',
-        smooth: true,
-        label: {
-          normal: {
-            show: true,
-            position: 'bottom',
-          },
-        },
-        emphasis: {
-          focus: 'none', // 取消高亮效果
-          scale: false,
-          disabled: false,
-        },
-        showSymbol: false,
-        lineStyle: {
-          normal: {
-            width: 0,
-          },
-        },
-        data: [98, 135, 178, 157, 177, 138, 116, 96, 127, 106, 144, 133],
-        markArea: {
-          label: {
-            normal: {
-              show: true,
-              fontSize: 15,
-              fontWeight: 'bold',
-              color: '#000',
-            },
-          },
-          itemStyle: {
-            normal: {
-              color: '#000',
-              opacity: 0.2,
-            },
-          },
-        },
-      },
-      {
-        name: '与上限的差值',
-        type: 'line',
-        smooth: true,
-        stack: '总量',
-        showSymbol: false,
-        lineStyle: {
-          normal: {
-            width: 0,
-          },
-        },
-        emphasis: {
-          focus: 'none', // 取消高亮效果
-          scale: false,
-          disabled: true,
-        },
-        areaStyle: {
-          normal: {
-            color: 'green',
-            opacity: 0.1,
-          },
-        },
-        data: [8, 9, 10, 12, 7, 8, 9, 14, 14, 14, 14, 12],
-      },
-    ],
-  };
-  let myChart = null;
   onMounted(() => {
     // 绘制告警时间图表
-    myChart = echarts.init(document.getElementById('echarts_box4'));
-    myChart.setOption(option);
+    faultChart = getChart('echarts_box4', faultOption);
+  });
+
+  onUnmounted(() => {
+    faultChart.dispose();
+    faultChart = null;
   });
 </script>
 <style scoped lang="less">
@@ -251,10 +154,6 @@
     background: #c7e6fb;
 
     &-top {
-      // background: #fff;
-      // border-radius: 12px;
-      // padding: 12px;
-      // box-sizing: border-box;
       display: flex;
       justify-content: space-between;
       width: 100%;
@@ -277,7 +176,6 @@
           margin: 8px 0;
 
           > div {
-            // background: #000;
             display: flex;
             align-items: center;
             justify-content: space-between;
