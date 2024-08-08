@@ -59,6 +59,7 @@
             class="ant-table-striped"
             :dataSource="dataSource"
             :columns="columns"
+            rowKey="key"
             :scroll="{ y: scrollY }"
           />
         </div>
@@ -110,7 +111,7 @@
   import myTitle from '../../component/my_title.vue';
   import { SearchOutlined, SyncOutlined, CloudDownloadOutlined } from '@ant-design/icons-vue';
   import { exportExcel } from '../../utils/tool';
-
+  import { levelList, alarmHeader, trendList, simulateAlarmList } from '../../utils/simulation';
   import { detailOption, typeOption, timeOption, getChart } from '../../echarts/detail_echarts';
   // 定义告警详情图表颜色
   const pieColor = ['#16b99a', '#4473ff', '#ff00f3', '#fb0065', '#ff941b'];
@@ -119,20 +120,7 @@
   // 定义下拉选择的文字
   const levelValue = ref<string>('');
   // 定义下拉选择的列表
-  const levelOptions = ref<any[]>([
-    {
-      value: 'one',
-      label: '一级',
-    },
-    {
-      value: 'two',
-      label: '二级',
-    },
-    {
-      value: 'three',
-      label: '三级',
-    },
-  ]);
+  const levelOptions = ref<any[]>(levelList);
   // 定义下拉选择的方法
   const levelChange = (value: String, option: any) => {
     levelValue.value = option.label;
@@ -158,52 +146,11 @@
   // 定义列表数据
   let dataSource = ref<any[]>([]);
   // 定义列表表头
-  let columns = ref<any[]>([
-    {
-      title: '告警所属数据中心',
-      dataIndex: 'core',
-      key: 'core',
-    },
-    {
-      title: '告警信息',
-      dataIndex: 'information',
-      key: 'information',
-    },
-    {
-      title: '告警等级',
-      dataIndex: 'grade',
-      key: 'grade',
-    },
-    {
-      title: '告警xxx',
-      dataIndex: 'alarm1',
-      key: 'alarm1',
-    },
-    {
-      title: '告警位置',
-      dataIndex: 'location',
-      key: 'location',
-    },
-    {
-      title: '告警xxx',
-      dataIndex: 'alarm2',
-      key: 'alarm2',
-    },
-    {
-      title: '告警xxx',
-      dataIndex: 'alarm3',
-      key: 'alarm3',
-    },
-    {
-      title: '处理状态',
-      dataIndex: 'status',
-      key: 'status',
-    },
-  ]);
+  let columns = ref<any[]>(alarmHeader);
   // 定义列表的id
-  const scrollBox = ref(null);
+  const scrollBox = ref<any>(null);
   // 定义列表的高度
-  let scrollY = ref<number>(770);
+  let scrollY = ref<number>(0);
 
   // 解析出告警详情图表的字体颜色
   const onpieColor = () => {
@@ -229,7 +176,12 @@
     };
     detailOption.color = pieColor;
     detailOption.series[0].label.rich = richColor;
-    detailChart = getChart('echarts_box1', detailOption);
+    detailOption.series[0].name = '告警详情';
+    (detailOption.series[0].data = [
+      { value: 1048, name: '告警级别1' },
+      { value: 735, name: '告警级别2' },
+    ]),
+      (detailChart = getChart('echarts_box1', detailOption));
   };
 
   // 定义告警详情图标数据
@@ -244,20 +196,7 @@
   // 定义下拉选择的文字
   const yearValue = ref('2023');
   // 定义下拉选择的列表
-  const yearOptions = ref<any[]>([
-    {
-      value: '2023',
-      label: '2023年',
-    },
-    {
-      value: '2022',
-      label: '2022年',
-    },
-    {
-      value: '2021',
-      label: '2021年',
-    },
-  ]);
+  const yearOptions = ref<any[]>(trendList);
   // 定义下拉选择的方法
   const yearChange = (value: String, option: any) => {
     yearValue.value = option.label;
@@ -285,21 +224,7 @@
       scrollY.value = scrollBox.value.offsetHeight - 100;
     }
     // 设置列表数据
-    let arr: any = [];
-    for (let i: any = 0; i < total.value; i++) {
-      arr.push({
-        key: i,
-        core: 'xxxx数据中心',
-        information: 'xx信息',
-        grade: '一级',
-        alarm1: 'xxxx1',
-        location: '数据机房',
-        alarm2: 'xxx报警',
-        alarm3: 'xxxx2',
-        status: '未处理',
-      });
-    }
-    dataSource.value = arr;
+    dataSource.value = simulateAlarmList(total.value);
 
     // 绘制告警详情图表
     onpieColor();
@@ -320,6 +245,8 @@
 </script>
 
 <style scoped lang="less">
+  @import '../../my_less/general.less';
+
   .moving-box {
     display: flex;
     align-items: center;
@@ -457,18 +384,12 @@
     }
   }
 
-  .my-title {
-    width: 100%;
-    height: 28px;
-  }
-</style>
-<style>
-  .ant-table-row:nth-child(2n) {
+  ::v-deep .ant-table-row:nth-child(2n) {
     background-color: #f9f9fa !important;
     color: #6a6969 !important;
   }
 
-  .ant-table-thead > tr > th {
+  ::v-deep .ant-table-thead > tr > th {
     background-color: #f0f8fc !important;
   }
 </style>

@@ -3,5 +3,13 @@ const iconStyle = {
   color: '#5489e2',
   fontSize: '40px',
   fontWeight: 600,
+  cursor: 'pointer',
 };
-export { iconStyle };
+// 定义删除按钮的样式
+const deleteStyle = {
+  color: '#ff3636',
+  fontSize: '24px',
+  fontWeight: 600,
+  cursor: 'pointer',
+};
+export { iconStyle, deleteStyle };

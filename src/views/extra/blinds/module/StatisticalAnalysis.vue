@@ -29,9 +29,101 @@
       <div class="analysis-box-top-fold" id="echarts_box9"></div>
     </div>
     <div class="analysis-box-bottom">
-      <div class="my-title">
-        <myTitle :titleData="'查询条件'" :titleType="'rectangle'" />
-        <div class="analysis-box-bottom"></div>
+      <div class="analysis-box-bottom-query">
+        <div class="analysis-box-bottom-query-from">
+          <div class="my-title">
+            <myTitle :titleData="'查询条件'" :titleType="'rectangle'" />
+          </div>
+          <div class="analysis-box-bottom-query-from-box">
+            <!-- 查询条件表单 -->
+            <div>
+              <div class="query-form-name">查询地点树:</div>
+              <div class="query-form-frame">
+                <a-tree-select
+                  v-model:value="treeList"
+                  :tree-data="treeData"
+                  tree-checkable
+                  allow-clear
+                  :show-checked-strategy="SHOW_PARENT"
+                  placeholder="请选择"
+                  tree-node-filter-prop="label"
+                />
+              </div>
+            </div>
+            <div>
+              <div class="query-form-name">地点查询:</div>
+              <div class="query-form-frame">
+                <a-select
+                  :value="placeValue"
+                  style="width: 100%"
+                  placeholder="请选择告警级别"
+                  :options="placeOptions"
+                  @change="placeChange"
+                />
+              </div>
+            </div>
+            <div>
+              <div class="query-form-name">时间查询:</div>
+              <div class="query-form-frame">
+                <a-date-picker :value="timeValue" format="YYYY-MM-DD" />
+              </div>
+            </div>
+          </div>
+          <div class="analysis-box-bottom-query-from-btn">
+            <!-- 查询条件按钮 -->
+            <a-button :icon="h(CloudDownloadOutlined)" type="primary">导出</a-button>
+            <div> <a-button :icon="h(SearchOutlined)" type="primary">查询</a-button></div>
+            <div> <a-button :icon="h(SyncOutlined)" type="primary" ghost>重置</a-button></div>
+          </div>
+        </div>
+        <div class="analysis-box-bottom-query-from">
+          <div class="my-title">
+            <myTitle :titleData="'已选范围'" :titleType="'tit'" />
+          </div>
+          <div class="analysis-box-bottom-query-from-select">
+            <div v-for="(item, index) in selectedRange" :key="index">{{ item }}</div>
+          </div>
+        </div>
+        <div class="analysis-box-bottom-query-table">
+          <div class="my-title">
+            <myTitle :titleData="'查询列表'" :titleType="'list'" />
+          </div>
+          <div class="analysis-box-bottom-query-table-box" ref="queryScroll">
+            <a-table
+              class="ant-table-striped"
+              :dataSource="queryList"
+              :columns="columns"
+              :scroll="{ y: queryScrollY }"
+              rowKey="key"
+            >
+              <template #bodyCell="{ column, text, record, index }">
+                <!-- 当前列是序号列时，显示序号 -->
+                <span v-if="column.dataIndex === 'serialNumber'">{{ index + 1 }}</span>
+                <!-- 其他列正常显示 -->
+                <span v-else>{{ text }}</span>
+                <template v-if="column.key === 'details'">
+                  <div class="details-box" @click="detailsRow(record)">详情</div>
+                </template>
+              </template>
+            </a-table>
+          </div>
+        </div>
+      </div>
+      <div class="analysis-box-bottom-img">
+        <div class="previous">
+          <LeftOutlined :style="iconStyle" />
+        </div>
+        <div class="analysis-box-bottom-img-center">
+          <div class="analysis-box-bottom-img-center-box">
+            <a-image :width="'100%'" :src="localImage" />
+          </div>
+          <div class="analysis-box-bottom-img-center-footer">
+            <myPag :current="imgCurrent" :total="imgTotal" :flag="false" />
+          </div>
+        </div>
+        <div class="next">
+          <RightOutlined :style="iconStyle" />
+        </div>
       </div>
     </div>
   </div>
@@ -39,7 +131,27 @@
 <script setup lang="ts">
   import myTitle from '../../component/my_title.vue';
   import { detailOption, foldOption, getChart } from '../../echarts/detail_echarts';
-  import { onMounted, onUnmounted } from 'vue';
+  import { TreeSelect } from 'ant-design-vue';
+  import { ref, h, onMounted, onUnmounted } from 'vue';
+  import {
+    SearchOutlined,
+    SyncOutlined,
+    CloudDownloadOutlined,
+    LeftOutlined,
+    RightOutlined,
+  } from '@ant-design/icons-vue';
+  import { iconStyle } from '../../utils/my_style';
+  import myPag from '../../component/my_pag.vue';
+  import localImage from '@/assets/images/cabinet.png';
+  import {
+    placeList,
+    statisticsTreeData,
+    onSelectedRange,
+    queryHeader,
+    onQueryList,
+  } from '../../utils/simulation';
+
+  const SHOW_PARENT = TreeSelect.SHOW_PARENT;
   // 定义统计图表颜色
   const pieColor = ['#17b9b8', '#ff8255', '#ff00f3', '#fb0065', '#ff941b'];
   // 定义统计图表饼图
@@ -93,7 +205,50 @@
   // 定义统计图表折线图
   let foldChart: any = null;
 
+  // 定义地点查询的文字
+  const placeValue = ref<string>('');
+  // 定义地点查询的列表
+  const placeOptions = ref<any[]>(placeList);
+  // 定义地点查询的方法
+  const placeChange = (value: String, option: any) => {
+    placeValue.value = option.label;
+  };
+  // 定义时间查询数据
+  let timeValue = ref<string>('');
+  // 定义查询地点树
+  let treeList = ref<any[]>([]);
+  // 定义树状选择的列表
+  let treeData = statisticsTreeData;
+  // 定义已选范围列表
+  let selectedRange = ref<any[]>([]);
+  // 定义列表数据
+  let queryList = ref<any[]>([]);
+  // 定义列表表头
+  let columns = ref<any[]>(queryHeader);
+  // 定义列表的id
+  const queryScroll = ref<any>(null);
+  // 定义列表的高度
+  let queryScrollY = ref<number>(0);
+  // 列表总条数
+  let tableTotal = ref<number>(50);
+  // 图片总条数
+  let imgTotal = ref<number>(7);
+  // 图片当前数
+  let imgCurrent = ref<number>(1);
+
+  // 点击详情
+  const detailsRow = (row: any) => {
+    console.log(row, '==========');
+  };
   onMounted(() => {
+    // 设置列表的高度
+    if (queryScroll.value) {
+      queryScrollY.value = queryScroll.value.offsetHeight - 100;
+    }
+    selectedRange.value = onSelectedRange(6);
+    // 设置列表数据
+
+    queryList.value = onQueryList(tableTotal.value);
     // 绘制统计图表
     onpieColor();
     foldChart = getChart('echarts_box9', foldOption);
@@ -106,6 +261,8 @@
   });
 </script>
 <style scoped lang="less">
+  @import '../../my_less/general.less';
+
   .analysis-box {
     width: 100%;
     height: 100%;
@@ -138,7 +295,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: space-between;
-        width: 400px;
+        width: 350px;
         height: 80%;
         border-right: solid 1px #f1f3f6;
         border-left: solid 1px #f1f3f6;
@@ -194,18 +351,226 @@
     }
 
     &-bottom {
+      display: flex;
       box-sizing: border-box;
+      align-items: center;
+      justify-content: space-between;
       width: 100%;
       height: calc(65% - 24px);
       margin-top: 24px;
       padding: 12px;
       border-radius: 12px;
       background: #fff;
+
+      &-query {
+        width: 65%;
+        height: 100%;
+
+        &-from {
+          display: flex;
+          box-sizing: border-box;
+          flex-direction: column;
+          justify-content: space-between;
+          width: 100%;
+          height: 132px;
+
+          &-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            height: 48px;
+
+            > div {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              width: 30%;
+              height: 34px;
+
+              > .query-form-name {
+                width: 100px;
+                height: 34px;
+                color: #000;
+                font-size: 16px;
+                font-weight: 500;
+                line-height: 34px;
+              }
+
+              > .query-form-frame {
+                width: calc(100% - 110px);
+                height: 34px;
+              }
+            }
+          }
+
+          &-btn {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+            height: 36px;
+
+            > div {
+              margin-left: 12px;
+            }
+          }
+
+          &-select {
+            display: flex;
+            box-sizing: border-box;
+            flex-wrap: wrap;
+            width: 100%;
+            height: calc(100% - 28px);
+            padding: 4px 0;
+            overflow-y: auto;
+
+            > div {
+              height: 28px;
+              margin-right: 12px;
+              margin-bottom: 8px;
+              padding: 0 12px;
+              border: solid 1px #17b9b8;
+              border-radius: 22px;
+              background: #17b9b8;
+              color: #fff;
+              font-size: 16px;
+              line-height: 26px;
+            }
+          }
+
+          &-select::-webkit-scrollbar {
+            display: none;
+          }
+        }
+
+        &-table {
+          width: 100%;
+          height: calc(100% - 264px);
+
+          &-box {
+            width: 100%;
+            height: calc(100% - 28px);
+          }
+        }
+      }
+
+      &-img {
+        display: flex;
+        box-sizing: border-box;
+        align-items: center;
+        justify-content: space-between;
+        width: 33%;
+        height: 90%;
+        padding: 12px;
+        border-left: solid 2px #f8f9fa;
+
+        .previous {
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+          width: 80px;
+          height: 100%;
+        }
+
+        &-center {
+          width: calc(100% - 160px);
+          height: 100%;
+
+          &-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: calc(100% - 48px);
+
+            > img {
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
+            }
+          }
+
+          &-footer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 48px;
+
+            .next-page {
+              box-sizing: border-box;
+              width: 76px;
+              height: 28px;
+              border: solid 2px #e4e4e4;
+              border-radius: 4px;
+              color: #666;
+              font-size: 14px;
+              line-height: 20px;
+              text-align: center;
+              cursor: pointer;
+            }
+
+            .current-page {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              width: 76px;
+              height: 28px;
+
+              &-left {
+                color: #358eec;
+                font-size: 16px;
+              }
+
+              &-center {
+                width: 12px;
+                color: #333;
+                font-size: 16px;
+                text-align: center;
+              }
+
+              &-right {
+                color: #333;
+                font-size: 16px;
+              }
+            }
+          }
+        }
+
+        .next {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          width: 80px;
+          height: 100%;
+        }
+      }
     }
   }
 
-  .my-title {
-    width: 100%;
-    height: 28px;
+  .details-box {
+    cursor: pointer;
+  }
+
+  ::v-deep .ant-picker {
+    width: 100% !important;
+  }
+
+  ::v-deep .ant-select {
+    width: 100% !important;
+  }
+
+  ::v-deep .ant-select-selector {
+    max-height: 64px !important;
+    overflow: auto !important;
+  }
+
+  ::v-deep .ant-table-row:nth-child(2n) {
+    background-color: #f6f9fb !important;
+    color: #484646 !important;
+  }
+
+  ::v-deep .ant-table-thead > tr > th {
+    background-color: #f0f8fc !important;
   }
 </style>

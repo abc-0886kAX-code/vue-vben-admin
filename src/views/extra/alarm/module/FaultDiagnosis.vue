@@ -119,6 +119,7 @@
   import { scatterOption, otherOption, getChart } from '../../echarts/detail_echarts';
   import myPag from '../../component/my_pag.vue';
   import { iconStyle } from '../../utils/my_style';
+  import { modelList } from '../../utils/simulation';
 
   let current = ref<number>(1);
   let total = ref<number>(6);
@@ -136,20 +137,7 @@
   const modelValue = ref<string>('');
 
   // 定义下拉模型选择的列表
-  const modelOptions = ref<any[]>([
-    {
-      value: 'one',
-      label: '一级',
-    },
-    {
-      value: 'two',
-      label: '二级',
-    },
-    {
-      value: 'three',
-      label: '三级',
-    },
-  ]);
+  const modelOptions = ref<any[]>(modelList);
   // 定义下拉模型选择的方法
   const modelChange = (value: string, option: any) => {
     modelValue.value = option.label;
@@ -189,6 +177,8 @@
   });
 </script>
 <style scoped lang="less">
+  @import '../../my_less/general.less';
+
   .fault-box {
     width: 100%;
     height: 100%;
@@ -420,10 +410,5 @@
         }
       }
     }
-  }
-
-  .my-title {
-    width: 100%;
-    height: 28px;
   }
 </style>

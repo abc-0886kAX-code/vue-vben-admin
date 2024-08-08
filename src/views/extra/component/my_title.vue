@@ -1,26 +1,31 @@
 <template>
   <div class="title-box">
-    <div class="title-box-rectangle" v-if="getType()"> </div>
+    <div class="title-box-rectangle" v-if="titleType === 'rectangle'"> </div>
+    <CheckCircleFilled :style="myStyle" v-else-if="titleType === 'tit'" />
+    <TableOutlined :style="myStyle" v-else-if="titleType === 'list'" />
+
     <div class="title-box-circular" v-else></div>
+
     <div>{{ titleData }} </div>
   </div>
 </template>
 
 <script setup lang="ts">
+  import { CheckCircleFilled, TableOutlined } from '@ant-design/icons-vue';
   // 通过defineProps接收父组件的值
   // rectangle 矩形竖边
   // circular  圆形竖边
-  let props = defineProps({
+  // tit   对号图标
+  // list   查询列表
+  defineProps({
     titleData: { type: String, default: '查询条件' },
     titleType: { type: String, default: 'rectangle' },
   });
-
-  const getType = () => {
-    if (props.titleType === 'rectangle') {
-      return true;
-    } else {
-      return false;
-    }
+  let myStyle: any = {
+    color: '#5489e2',
+    fontSize: '18px',
+    marginRight: '8px',
+    marginTop: '2px',
   };
 </script>
 
