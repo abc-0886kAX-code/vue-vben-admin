@@ -6,14 +6,21 @@ const detailOption = {
   },
   color: ['#16b99a', '#4473ff', '#ff00f3', '#fb0065', '#ff941b'],
   legend: {
-    bottom: '3%',
+    top: '6px',
     left: 'center',
+  },
+  grid: {
+    bottom: '0%',
+    right: '2%',
+    left: '6%',
+    top: '0%',
   },
   series: [
     {
       name: '告警详情',
       type: 'pie',
-      radius: ['35%', '70%'],
+      top: '32px',
+      radius: ['45%', '95%'],
       avoidLabelOverlap: false,
       labelLine: {
         show: true,
@@ -70,9 +77,10 @@ const typeOption = {
     data: ['图例1', '图例2'],
   },
   grid: {
-    left: '3%',
-    right: '4%',
+    left: '2%',
+    right: '6%',
     bottom: '3%',
+    top: '10%',
     containLabel: true,
   },
   xAxis: {
@@ -142,6 +150,13 @@ const typeOption = {
 const timeOption = {
   tooltip: {
     trigger: 'axis',
+  },
+  grid: {
+    bottom: '6%',
+    right: '2%',
+    left: '8%',
+    top: '12%',
+    // right: '12%',
   },
   legend: {
     color: ['#16ea76', '#58c6ff', '#ff8256'],

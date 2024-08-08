@@ -63,7 +63,9 @@
       <div class="monitor-box-artificial-list">
         <div class="monitor-box-artificial-list-img"><myUnloadImg /> </div>
         <div class="monitor-box-artificial-list-btn">
-          <a-button :icon="h(ScanOutlined)" type="primary">开始识别</a-button>
+          <a-button :icon="h(ScanOutlined)" type="primary" @click="onStartIdentify"
+            >开始识别</a-button
+          >
         </div>
       </div>
     </div>
@@ -91,6 +93,7 @@
             <span v-if="column.dataIndex === 'serialNumber'">{{ index + 1 }}</span>
             <template v-if="column.key === 'picture'">
               <img class="table-img" :src="text" />
+              <!-- <a-image class="table-img" :src="text" ref="dom" /> -->
             </template>
             <template v-if="column.key === 'operation'">
               <DeleteOutlined :style="deleteStyle" @click="deleteRow(record)" />
@@ -182,13 +185,21 @@
   const deleteRow = (row: any) => {
     console.log(row, '===========');
   };
+  const onStartIdentify = () => {
+    console.log('开始识别');
+    importList.value = [];
+    // 设置列表数据
+    importList.value = onDistinguishList(50, localImage);
+  };
   onMounted(() => {
     // 设置列表的高度
     if (importScroll.value) {
       importScrollY.value = importScroll.value.offsetHeight - 100;
     }
-    // 设置列表数据
-    importList.value = onDistinguishList(50, localImage);
+
+    // this.$refs.radio.$children.forEach((item) => {
+    //     item.$refs.radio.removeAttribute("aria-hidden");
+    // });
   });
 </script>
 <style scoped lang="less">
@@ -329,8 +340,9 @@
   }
 
   .table-img {
-    width: 102px;
-    height: 64px;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 
   ::v-deep .ant-picker {

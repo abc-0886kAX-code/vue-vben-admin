@@ -12,4 +12,19 @@ const deleteStyle = {
   fontWeight: 600,
   cursor: 'pointer',
 };
-export { iconStyle, deleteStyle };
+// 定义下拉选择框的样式
+const selectStyle = {
+  width: '150px',
+  height: '32px',
+};
+// 定义输入框的样式
+const inputStyle = {
+  width: '180px',
+  height: '32px',
+};
+const pickerStyle = {
+  width: '300px',
+  height: '32px',
+};
+
+export { iconStyle, deleteStyle, selectStyle, inputStyle, pickerStyle };

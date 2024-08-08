@@ -1,12 +1,12 @@
 <template>
   <div class="pag-box">
-    <div class="previous-page" v-if="flag" @click="onPreviousPage(current, total)">上一页</div>
+    <div class="previous-page" v-if="flag" @click="onPreviousPage('upper')">上一页</div>
     <div class="current-page">
       <div class="current-page-left">{{ current }}</div>
       <div class="current-page-center">/</div>
       <div class="current-page-right">{{ total }}</div>
     </div>
-    <div class="next-page" v-if="flag" @click="onNextPage(current, total)">下一页</div>
+    <div class="next-page" v-if="flag" @click="onPreviousPage('lower')">下一页</div>
   </div>
 </template>
 
@@ -20,25 +20,10 @@
     total: { type: Number, default: 5 },
     flag: { type: Boolean, default: true },
   });
-  const onPreviousPage = function (current: any, total: Number) {
-    let Str: Number = 0;
-    if (current === 1) {
-      Str = total;
-    } else {
-      Str = current - 1;
-    }
-    emit('previousPage', { current: Str });
+  const onPreviousPage = function (str: String) {
+    emit('previousPage', str);
   };
-  // throttle(onPreviousPage, 500);
-  const onNextPage = function (current: any, total: Number) {
-    let num = 0;
-    if (current === total) {
-      num = 1;
-    } else {
-      num = current + 1;
-    }
-    emit('previousPage', { current: num });
-  };
+
   // throttle(onNextPage, 500);
 </script>
 

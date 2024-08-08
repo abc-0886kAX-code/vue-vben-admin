@@ -7,39 +7,38 @@
         </div>
         <div class="moving-box-left-query-form">
           <!-- 查询条件表单 -->
-          <div>
+          <div class="query-form-box">
             <div class="query-form-name">告警级别:</div>
-            <div class="query-form-frame">
-              <a-select
-                :value="levelValue"
-                style="width: 100%"
-                placeholder="请选择告警级别"
-                :options="levelOptions"
-                @change="levelChange"
-              />
-            </div>
+            <a-select
+              :value="levelValue"
+              :style="selectStyle"
+              placeholder="请选择告警级别"
+              :options="levelOptions"
+              @change="levelChange"
+            />
           </div>
-          <div>
+          <div class="query-form-box">
             <div class="query-form-name">告警时间:</div>
-            <div class="query-form-frame">
-              <a-date-picker
-                :value="timeValue"
-                format="YYYY-MM-DD HH:mm:ss"
-                :show-time="{ defaultValue: dayjs('00:00:00', 'HH:mm:ss') }"
-              />
-            </div>
+            <a-date-picker
+              :value="timeValue"
+              :style="selectStyle"
+              format="YYYY-MM-DD HH:mm:ss"
+              :show-time="{ defaultValue: dayjs('00:00:00', 'HH:mm:ss') }"
+            />
           </div>
-          <div>
+          <div class="query-form-box">
             <div class="query-form-name">其他:</div>
-            <div class="query-form-frame">
-              <a-input :value="otherValue" placeholder="" />
-            </div>
+            <a-input :value="otherValue" :style="inputStyle" placeholder="" />
           </div>
         </div>
         <div class="moving-box-left-query-btn">
           <!-- 查询条件按钮 -->
-          <div> <a-button :icon="h(SearchOutlined)" type="primary">查询</a-button></div>
-          <div> <a-button :icon="h(SyncOutlined)" type="primary" ghost>重置</a-button></div>
+          <div class="use-btn">
+            <myBtn :btnType="'query'" />
+          </div>
+          <div class="use-btn">
+            <myBtn :btnType="'reset'" />
+          </div>
         </div>
       </div>
       <div class="moving-box-left-list">
@@ -47,12 +46,9 @@
           <myTitle :titleData="'告警列表'" :titleType="'circular'" />
         </div>
         <div class="moving-box-left-list-export">
-          <a-button
-            :icon="h(CloudDownloadOutlined)"
-            type="primary"
-            @click="downloadExcel(dataSource)"
-            >导出</a-button
-          >
+          <div class="use-btn">
+            <myBtn :btnType="'export'" @determine="downloadExcel" />
+          </div>
         </div>
         <div class="moving-box-left-list-box" ref="scrollBox">
           <a-table
@@ -63,15 +59,6 @@
             :scroll="{ y: scrollY }"
           />
         </div>
-        <!-- <div class="moving-box-left-list-pag">
-          <a-pagination
-            :current="pages.current"
-            :page-size="pages.pageSize"
-            :total="total"
-            :show-total="(total) => `共${total}条`"
-            @change="pageChange1"
-          />
-        </div> -->
       </div>
     </div>
     <div class="moving-box-right">
@@ -107,12 +94,14 @@
 </template>
 <script setup lang="ts">
   import dayjs from 'dayjs';
-  import { ref, h, onMounted, onUnmounted } from 'vue';
+  import { ref, onMounted, onUnmounted } from 'vue';
   import myTitle from '../../component/my_title.vue';
-  import { SearchOutlined, SyncOutlined, CloudDownloadOutlined } from '@ant-design/icons-vue';
+  import myBtn from '../../component/my_btn.vue';
   import { exportExcel } from '../../utils/tool';
   import { levelList, alarmHeader, trendList, simulateAlarmList } from '../../utils/simulation';
+
   import { detailOption, typeOption, timeOption, getChart } from '../../echarts/detail_echarts';
+  import { selectStyle, inputStyle } from '../../utils/my_style';
   // 定义告警详情图表颜色
   const pieColor = ['#16b99a', '#4473ff', '#ff00f3', '#fb0065', '#ff941b'];
   // 配置告警详情文字的颜色样式
@@ -129,20 +118,8 @@
   let timeValue = ref<string>('');
   // 定义告警其他
   let otherValue = ref<string>('');
-
-  // 分页数据
-  // let pages = ref<Object>({
-  //   current: 1,
-  //   pageSize: 10,
-  // });
   // 总条数
   let total = ref<number>(100);
-  // 分页方法
-  // const pageChange1 = (page, pageSize) => {
-  //   pages.value.current = page;
-  //   pages.value.pageSize = pageSize;
-  // };
-
   // 定义列表数据
   let dataSource = ref<any[]>([]);
   // 定义列表表头
@@ -183,16 +160,12 @@
     ]),
       (detailChart = getChart('echarts_box1', detailOption));
   };
-
   // 定义告警详情图标数据
   let detailChart: any = null;
-
   // 定义告警类型图标数据
   let typeChart: any = null;
-
   // 定义告警时间图标数据
   let timeChart: any = null;
-
   // 定义下拉选择的文字
   const yearValue = ref('2023');
   // 定义下拉选择的列表
@@ -203,7 +176,6 @@
     timeOption.series[0].data = [289, 660, 130, 220, 900, 800, 800, 900, 220, 130, 660, 289];
     timeChart.setOption(timeOption);
   };
-
   const downloadExcel = (data: any[], filename: string = 'export.xlsx') => {
     const titleArr: any = [
       '序号',
@@ -273,31 +245,8 @@
         &-form {
           display: flex;
           align-items: center;
-          justify-content: space-between;
           width: 100%;
           height: 48px;
-
-          > div {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 30%;
-            height: 34px;
-
-            > .query-form-name {
-              width: 78px;
-              height: 34px;
-              color: #000;
-              font-size: 16px;
-              font-weight: 500;
-              line-height: 34px;
-            }
-
-            > .query-form-frame {
-              width: calc(100% - 78px);
-              height: 34px;
-            }
-          }
         }
 
         &-btn {
@@ -305,10 +254,6 @@
           justify-content: flex-end;
           width: 100%;
           height: 36px;
-
-          > div {
-            margin-left: 12px;
-          }
         }
       }
 
@@ -384,12 +329,18 @@
     }
   }
 
-  ::v-deep .ant-table-row:nth-child(2n) {
-    background-color: #f9f9fa !important;
-    color: #6a6969 !important;
+  ::v-deep(.ant-table-row:nth-child(2n)) {
+    background-color: #f9fbfd !important;
+    color: #333333 !important;
+    font-size: 14px !important;
   }
-
-  ::v-deep .ant-table-thead > tr > th {
+  ::v-deep(.ant-table-thead > tr > th) {
     background-color: #f0f8fc !important;
+    color: #000000 !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+  }
+  ::v-deep(.ant-table-pagination) {
+    margin-top: 20px !important;
   }
 </style>

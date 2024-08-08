@@ -36,16 +36,16 @@
     width: 100%;
     height: 100%;
     color: #000;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: bold;
+    padding-left: 6px;
+    box-sizing: border-box;
 
     &-rectangle {
       box-sizing: border-box;
-      width: 6px;
-      height: 18px;
-      margin-right: 12px;
-      border-right: solid 1px #87c0f5;
-      border-left: solid 1px #87c0f5;
+      width: 3px;
+      height: 14px;
+      margin-right: 8px;
       background: #57a6ef;
     }
 
