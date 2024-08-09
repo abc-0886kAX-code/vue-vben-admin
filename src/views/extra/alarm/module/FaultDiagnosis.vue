@@ -7,42 +7,47 @@
         </div>
 
         <div class="fault-box-top-condition-select">
-          <div>
+          <div class="query-form-box">
             <div class="query-form-name">时间粒度:</div>
-            <div class="query-form-frame">
-              <a-input :value="granularityValue" placeholder="" />
-            </div>
-          </div>
-          <div>
-            <div class="query-form-name">动态阀值信度:</div>
-            <div class="query-form-frame">
-              <a-input :value="reliabilityValue" placeholder="" />
-            </div>
+            <a-input :style="inputStyle" :value="granularityValue" placeholder="" />
           </div>
 
-          <div>
-            <div class="query-form-name">模型选择:</div>
-            <div class="query-form-frame">
-              <a-select
-                :value="modelValue"
-                style="width: 100%"
-                placeholder="请选择模型"
-                :options="modelOptions"
-                @change="modelChange"
-              />
-            </div>
+          <div class="query-form-box">
+            <div class="query-form-name">动态阀值信度:</div>
+            <a-input :style="inputStyle" :value="reliabilityValue" placeholder="" />
           </div>
-          <div>
+
+          <div class="query-form-box">
+            <div class="query-form-name">模型选择:</div>
+            <a-select
+              :value="modelValue"
+              :style="selectStyle"
+              placeholder="请选择模型"
+              :options="modelOptions"
+              @change="modelChange"
+            />
+          </div>
+          <div class="query-form-box">
             <div class="query-form-name">时间范围:</div>
-            <div class="query-form-frame">
-              <a-range-picker :value="scopeValue" />
-            </div>
+            <a-range-picker :style="pickerStyle" :value="scopeValue" />
           </div>
         </div>
         <div class="fault-box-top-condition-btn">
-          <div> <a-button :icon="h(SearchOutlined)" type="primary">查询</a-button></div>
-          <div> <a-button :icon="h(SyncOutlined)" type="primary" ghost>重置</a-button></div>
-          <div><a-button :icon="h(CloudDownloadOutlined)" type="primary">导出</a-button></div>
+          <div class="use-btn">
+            <myBtn :btnType="false" :btnName="'查询'">
+              <SearchOutlined />
+            </myBtn>
+          </div>
+          <div class="use-btn">
+            <myBtn :btnType="true" :btnName="'重置'">
+              <SyncOutlined />
+            </myBtn>
+          </div>
+          <div class="use-btn">
+            <myBtn :btnType="false" :btnName="'导出'">
+              <CloudDownloadOutlined />
+            </myBtn>
+          </div>
         </div>
       </div>
 
@@ -75,16 +80,29 @@
 
         <div class="fault-box-bottom-chart-box">
           <div class="previous">
-            <LeftOutlined :style="iconStyle" />
+            <LeftOutlined @click="onPreviousPage('upper')" :style="iconStyle" />
           </div>
           <div class="fault-box-bottom-chart-box-center">
-            <div class="fault-box-bottom-chart-box-center-box" id="echarts_box6"> </div>
+            <div class="fault-box-bottom-chart-box-center-box" ref="bannerBox">
+              <a-carousel
+                v-model="currentPage"
+                :dots="false"
+                :after-change="handleAfterChange"
+                :arrows="false"
+                ref="carousel"
+              >
+                <div v-for="item in total" :key="item">
+                  <a-image :height="bannerHeight + 'px'" :width="'100%'" :src="chartImg" />
+                </div>
+              </a-carousel>
+            </div>
+
             <div class="fault-box-bottom-chart-box-center-footer">
-              <myPag :current="current" :total="total" @previous-page="onPreviousPage" />
+              <myPag :current="currentPage" :total="total" @previous-page="onPreviousPage" />
             </div>
           </div>
           <div class="next">
-            <RightOutlined :style="iconStyle" />
+            <RightOutlined :style="iconStyle" @click="onPreviousPage('lower')" />
           </div>
         </div>
       </div>
@@ -106,27 +124,38 @@
   </div>
 </template>
 <script setup lang="ts">
-  import { ref, h, onMounted, onUnmounted } from 'vue';
+  import { ref, onMounted, onUnmounted } from 'vue';
   import myTitle from '../../component/my_title.vue';
   import description from '../../component/description.vue';
+  import myBtn from '../../component/my_btn.vue';
+  import chartImg from '@/assets/images/scatter_chart.png';
+
   import {
+    LeftOutlined,
+    RightOutlined,
     SearchOutlined,
     SyncOutlined,
     CloudDownloadOutlined,
-    LeftOutlined,
-    RightOutlined,
   } from '@ant-design/icons-vue';
-  import { scatterOption, otherOption, getChart } from '../../echarts/detail_echarts';
+  import { otherOption, getChart } from '../../echarts/detail_echarts';
   import myPag from '../../component/my_pag.vue';
-  import { iconStyle } from '../../utils/my_style';
+  import { iconStyle, selectStyle, inputStyle, pickerStyle } from '../../utils/my_style';
   import { modelList } from '../../utils/simulation';
 
-  let current = ref<number>(1);
+  let currentPage = ref<number>(1);
   let total = ref<number>(6);
-  const onPreviousPage = (row: any) => {
-    current.value = row.current;
+  const carousel = ref<any>(null); // 创建一个 ref 引用来获取 a-carousel 实例
+  const onPreviousPage = (rowType: string) => {
+    if (rowType == 'upper') {
+      carousel.value.prev();
+    } else if (rowType == 'lower') {
+      carousel.value.next();
+    }
   };
-
+  // 得到切换后的页码
+  const handleAfterChange = (current) => {
+    currentPage.value = current + 1;
+  };
   // 定义时间粒度
   let granularityValue = ref<string>('');
   // 定义动态阀值信度
@@ -142,37 +171,23 @@
   const modelChange = (value: string, option: any) => {
     modelValue.value = option.label;
   };
-  // 散点图DOM
-  let scatterChart: any = null;
-  // 散点图数据
-  let scatterData = ref<any[]>([]);
-  // 自定义模拟散点图数据方法
-  const generateScatterData = () => {
-    const data: any = [];
-    for (let i = 0; i < 100; i++) {
-      data.push([
-        Math.ceil(Math.random() * 1000), // x 轴值
-        Math.ceil(Math.random() * 10000), // y 轴值
-      ]);
-    }
-    scatterData.value = data;
-    scatterOption.series[0].data = data;
-    scatterChart = getChart('echarts_box6', scatterOption);
-  };
   // 其他业务分析DOM
   let otherChart: any = null;
 
+  // 定义图片的高度
+  let bannerHeight = ref<number>(0);
+  // 图片父元素的Dom
+  let bannerBox = ref<any>(null);
   onMounted(() => {
-    // 绘制散点图图表
-    generateScatterData();
+    if (bannerBox.value) {
+      bannerHeight.value = bannerBox.value.offsetHeight;
+    }
     // 绘制其他业务分析图表
     otherChart = getChart('echarts_box7', otherOption);
   });
 
   onUnmounted(() => {
-    scatterChart.dispose();
     otherChart.dispose();
-    scatterChart = null;
     otherChart = null;
   });
 </script>
@@ -188,49 +203,33 @@
       display: flex;
       justify-content: space-between;
       width: 100%;
-      height: 220px;
+      height: 200px;
 
       &-condition {
         box-sizing: border-box;
         width: 60%;
         height: 100%;
         padding: 12px;
-        border-radius: 12px;
+        border-radius: 5px;
         background: #fff;
 
         &-select {
           display: flex;
           flex-wrap: wrap;
-          justify-content: space-between;
+          // justify-content: space-between;
           width: 100%;
           height: calc(100% - 80px);
           margin: 8px 0;
 
-          > div {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 30%;
-            min-height: 34px;
+          // > div {
+          //   display: flex;
+          //   align-items: center;
+          //   height: 34px;
+          // }
 
-            > .query-form-name {
-              width: 78px;
-              min-height: 34px;
-              color: #000;
-              font-size: 16px;
-              font-weight: 500;
-              line-height: 28px;
-            }
-
-            > .query-form-frame {
-              width: calc(100% - 78px);
-              height: 34px;
-            }
-          }
-
-          > div:last-of-type {
-            width: 40%;
-          }
+          // > div:last-of-type {
+          //   width: 40%;
+          // }
         }
 
         &-btn {
@@ -249,15 +248,15 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        width: calc(40% - 12px);
+        width: calc(40% - 10px);
         height: 100%;
 
         > div {
           box-sizing: border-box;
           width: 100%;
-          height: calc(50% - 6px);
+          height: calc(50% - 5px);
           padding: 8px 12px;
-          border-radius: 12px;
+          border-radius: 5px;
           background: #fff;
 
           > .fault-box-top-explain-content {
@@ -273,15 +272,15 @@
       display: flex;
       justify-content: space-between;
       width: 100%;
-      height: calc(100% - 232px);
-      margin-top: 12px;
+      height: calc(100% - 210px);
+      margin-top: 10px;
 
       &-chart {
         box-sizing: border-box;
         width: 60%;
         height: 100%;
         padding: 12px;
-        border-radius: 12px;
+        border-radius: 5px;
         background: #fff;
 
         > .my-title {
@@ -377,35 +376,36 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        width: calc(40% - 12px);
+        width: calc(40% - 10px);
         height: 100%;
 
         > div {
           box-sizing: border-box;
           width: 100%;
-          height: calc(50% - 6px);
+          height: calc(50% - 5px);
           padding: 8px 12px;
-          border-radius: 12px;
+          border-radius: 5px;
           background: #fff;
 
           .img-box {
             box-sizing: border-box;
             width: 100%;
-            height: calc(100% - 46px);
+            height: calc(100% - 30px);
             margin-top: 12px;
-            padding: 12px;
+            padding: 8px;
+            box-sizing: border-box;
 
             > img {
               width: 100%;
               height: 100%;
-              object-fit: contain;
+              object-fit: fill;
             }
           }
 
           .other-box {
             width: 100%;
-            height: calc(100% - 46px);
-            margin-top: 12px;
+            height: calc(100% - 30px);
+            // margin-top: 12px;
           }
         }
       }

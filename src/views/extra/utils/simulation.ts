@@ -78,7 +78,7 @@ function simulateAlarmList(total) {
   for (let i: any = 0; i < total; i++) {
     arr.push({
       key: i,
-      core: 'xxxx数据中心',
+      core: 'xxxx数据中心' + i,
       information: 'xx信息',
       grade: '一级',
       alarm1: 'xxxx1',
@@ -258,7 +258,7 @@ function onQueryList(total) {
   for (let i: any = 0; i < total; i++) {
     arr.push({
       key: i,
-      area: '区域',
+      area: '区域' + i,
       build: '机楼',
       machineRoom: '机房',
       cabinet: '机柜',
@@ -412,7 +412,7 @@ function onDistinguishList(total, localImage) {
   for (let i: any = 0; i < total; i++) {
     arr.push({
       key: i,
-      area: '区域',
+      area: '区域' + i,
       build: '机楼',
       machineRoom: '机房',
       cabinet: '机柜',

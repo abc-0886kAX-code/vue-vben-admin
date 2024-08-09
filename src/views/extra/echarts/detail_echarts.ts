@@ -451,8 +451,9 @@ const scatterOption = {
 const otherOption = {
   grid: {
     left: '3%',
-    right: '4%',
-    bottom: '10%',
+    right: '2%',
+    bottom: '8%',
+    top: '5%',
     containLabel: true,
   },
   legend: {
@@ -557,6 +558,13 @@ const foldOption = {
   title: {
     show: false,
   },
+  grid: {
+    bottom: '8%',
+    right: '6%',
+    left: '6%',
+    top: '12%',
+    // right: '12%',
+  },
   tooltip: {
     trigger: 'axis',
     formatter: function (params) {
@@ -587,18 +595,18 @@ const foldOption = {
   xAxis: {
     type: 'category',
     data: [
-      '00:00',
-      '2:00',
-      '4:00',
-      '6:00',
-      '8:00',
-      '10:00',
-      '12:00',
-      '14:00',
-      '16:00',
-      '18:00',
-      '20:00',
-      '22:00',
+      '机柜1',
+      '机柜2',
+      '机柜3',
+      '机柜4',
+      '机柜5',
+      '机柜6',
+      '机柜7',
+      '机柜8',
+      '机柜9',
+      '机柜10',
+      '机柜11',
+      '机柜12',
     ],
     boundaryGap: false,
     splitLine: {

@@ -26,5 +26,10 @@ const pickerStyle = {
   width: '300px',
   height: '32px',
 };
+// 定义选择树的样式
+const treeStyle = {
+  width: '240px',
+  height: '32px',
+};
 
-export { iconStyle, deleteStyle, selectStyle, inputStyle, pickerStyle };
+export { iconStyle, deleteStyle, selectStyle, inputStyle, pickerStyle, treeStyle };

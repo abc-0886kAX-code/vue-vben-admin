@@ -1,7 +1,7 @@
 <template>
   <div class="description-box">
     <div class="description-box-icon">
-      <InfoCircleOutlined style="color: #1890ff; font-size: 16px" />
+      <InfoCircleOutlined style="color: #1890ff; font-size: 14px" />
     </div>
     <div class="description-box-text">{{ descriptionText }}</div>
   </div>
@@ -33,7 +33,7 @@
     &-text {
       width: calc(100% - 24px);
       color: #5a6168;
-      font-size: 16px;
+      font-size: 14px;
       line-height: 24px;
     }
   }

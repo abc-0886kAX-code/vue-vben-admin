@@ -32,13 +32,19 @@
         </div>
         <div class="fault-box-top-condition-btn">
           <div class="use-btn">
-            <myBtn :btnType="'query'" />
+            <myBtn :btnType="false" :btnName="'查询'">
+              <SearchOutlined />
+            </myBtn>
           </div>
           <div class="use-btn">
-            <myBtn :btnType="'reset'" />
+            <myBtn :btnType="true" :btnName="'重置'">
+              <SyncOutlined />
+            </myBtn>
           </div>
           <div class="use-btn">
-            <myBtn :btnType="'export'" />
+            <myBtn :btnType="false" :btnName="'导出'">
+              <CloudDownloadOutlined />
+            </myBtn>
           </div>
         </div>
       </div>
@@ -73,7 +79,7 @@
           <LeftOutlined @click="onPreviousPage('upper')" :style="iconStyle" />
         </div>
         <div class="fault-box-bottom-chart-center">
-          <div class="fault-box-bottom-chart-center-box">
+          <div class="fault-box-bottom-chart-center-box" ref="bannerBox">
             <a-carousel
               v-model="currentPage"
               :dots="false"
@@ -82,7 +88,7 @@
               ref="carousel"
             >
               <div v-for="item in total" :key="item">
-                <img src="@/assets/images/fault_charts.png" class="use-echarts-img" />
+                <a-image :height="bannerHeight + 'px'" :width="'100%'" :src="faultImg" />
               </div>
             </a-carousel>
           </div>
@@ -102,14 +108,21 @@
   import myTitle from '../../component/my_title.vue';
   import myPag from '../../component/my_pag.vue';
   import description from '../../component/description.vue';
-  import { LeftOutlined, RightOutlined } from '@ant-design/icons-vue';
+  import {
+    LeftOutlined,
+    RightOutlined,
+    SearchOutlined,
+    SyncOutlined,
+    CloudDownloadOutlined,
+  } from '@ant-design/icons-vue';
   import { modelList } from '../../utils/simulation';
   import { iconStyle, selectStyle, inputStyle, pickerStyle } from '../../utils/my_style';
   import myBtn from '../../component/my_btn.vue';
+  import faultImg from '@/assets/images/fault_charts.png';
 
   let currentPage = ref<number>(1);
   let total = ref<number>(6);
-  const carousel = ref(null); // 创建一个 ref 引用来获取 a-carousel 实例
+  const carousel = ref<any>(null); // 创建一个 ref 引用来获取 a-carousel 实例
   // 得到切换后的页码
   const handleAfterChange = (current) => {
     currentPage.value = current + 1;
@@ -136,8 +149,15 @@
   const modelChange = (value: string, option: any) => {
     modelValue.value = option.label;
   };
-
-  onMounted(() => {});
+  // 定义图片的高度
+  let bannerHeight = ref<number>(0);
+  // 图片父元素的Dom
+  let bannerBox = ref<any>(null);
+  onMounted(() => {
+    if (bannerBox.value) {
+      bannerHeight.value = bannerBox.value.offsetHeight;
+    }
+  });
 
   onUnmounted(() => {
     // faultChart.dispose();
@@ -163,7 +183,7 @@
         width: 60%;
         height: 100%;
         padding: 12px;
-        border-radius: 12px;
+        border-radius: 5px;
         background: #fff;
 
         &-select {
@@ -186,15 +206,15 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        width: calc(40% - 12px);
+        width: calc(40% - 10px);
         height: 100%;
 
         > div {
           box-sizing: border-box;
           width: 100%;
-          height: calc(50% - 6px);
+          height: calc(50% - 5px);
           padding: 8px 12px;
-          border-radius: 12px;
+          border-radius: 5px;
           background: #fff;
 
           > .fault-box-top-explain-content {
@@ -209,10 +229,10 @@
     &-bottom {
       box-sizing: border-box;
       width: 100%;
-      height: calc(100% - 232px);
-      margin-top: 12px;
+      height: calc(100% - 230px);
+      margin-top: 10px;
       padding: 12px;
-      border-radius: 12px;
+      border-radius: 5px;
       background: #fff;
 
       > .my-title {

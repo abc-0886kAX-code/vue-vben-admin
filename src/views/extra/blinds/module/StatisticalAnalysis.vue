@@ -36,44 +36,52 @@
           </div>
           <div class="analysis-box-bottom-query-from-box">
             <!-- 查询条件表单 -->
-            <div>
+
+            <div class="query-form-box">
               <div class="query-form-name">查询地点树:</div>
-              <div class="query-form-frame">
-                <a-tree-select
-                  v-model:value="treeList"
-                  :tree-data="treeData"
-                  tree-checkable
-                  allow-clear
-                  :show-checked-strategy="SHOW_PARENT"
-                  placeholder="请选择"
-                  tree-node-filter-prop="label"
-                />
-              </div>
+              <a-tree-select
+                v-model:value="treeList"
+                :style="treeStyle"
+                :tree-data="treeData"
+                tree-checkable
+                allow-clear
+                :show-checked-strategy="SHOW_PARENT"
+                placeholder="请选择"
+                tree-node-filter-prop="label"
+              />
             </div>
-            <div>
+            <div class="query-form-box">
               <div class="query-form-name">地点查询:</div>
-              <div class="query-form-frame">
-                <a-select
-                  :value="placeValue"
-                  style="width: 100%"
-                  placeholder="请选择告警级别"
-                  :options="placeOptions"
-                  @change="placeChange"
-                />
-              </div>
+              <a-select
+                :style="selectStyle"
+                :value="placeValue"
+                placeholder="请选择告警级别"
+                :options="placeOptions"
+                @change="placeChange"
+              />
             </div>
-            <div>
+            <div class="query-form-box">
               <div class="query-form-name">时间查询:</div>
-              <div class="query-form-frame">
-                <a-date-picker :value="timeValue" format="YYYY-MM-DD" />
-              </div>
+              <a-date-picker :style="selectStyle" :value="timeValue" format="YYYY-MM-DD" />
             </div>
           </div>
           <div class="analysis-box-bottom-query-from-btn">
             <!-- 查询条件按钮 -->
-            <a-button :icon="h(CloudDownloadOutlined)" type="primary">导出</a-button>
-            <div> <a-button :icon="h(SearchOutlined)" type="primary">查询</a-button></div>
-            <div> <a-button :icon="h(SyncOutlined)" type="primary" ghost>重置</a-button></div>
+            <div class="use-btn">
+              <myBtn :btnType="false" :btnName="'查询'">
+                <SearchOutlined />
+              </myBtn>
+            </div>
+            <div class="use-btn">
+              <myBtn :btnType="true" :btnName="'重置'">
+                <SyncOutlined />
+              </myBtn>
+            </div>
+            <div class="use-btn">
+              <myBtn :btnType="false" :btnName="'导出'">
+                <CloudDownloadOutlined />
+              </myBtn>
+            </div>
           </div>
         </div>
         <div class="analysis-box-bottom-query-from">
@@ -111,18 +119,28 @@
       </div>
       <div class="analysis-box-bottom-img">
         <div class="previous">
-          <LeftOutlined :style="iconStyle" />
+          <LeftOutlined @click="onPreviousPage('upper')" :style="iconStyle" />
         </div>
         <div class="analysis-box-bottom-img-center">
-          <div class="analysis-box-bottom-img-center-box">
-            <a-image :width="'100%'" :src="localImage" />
+          <div class="analysis-box-bottom-img-center-box" ref="bannerBox">
+            <a-carousel
+              v-model="imgCurrent"
+              :dots="false"
+              :after-change="handleAfterChange"
+              :arrows="false"
+              ref="carousel"
+            >
+              <div v-for="item in imgTotal" :key="item">
+                <a-image :height="bannerHeight + 'px'" :width="'100%'" :src="localImage" />
+              </div>
+            </a-carousel>
           </div>
           <div class="analysis-box-bottom-img-center-footer">
             <myPag :current="imgCurrent" :total="imgTotal" :flag="false" />
           </div>
         </div>
         <div class="next">
-          <RightOutlined :style="iconStyle" />
+          <RightOutlined @click="onPreviousPage('lower')" :style="iconStyle" />
         </div>
       </div>
     </div>
@@ -132,16 +150,17 @@
   import myTitle from '../../component/my_title.vue';
   import { detailOption, foldOption, getChart } from '../../echarts/detail_echarts';
   import { TreeSelect } from 'ant-design-vue';
-  import { ref, h, onMounted, onUnmounted } from 'vue';
+  import { ref, onMounted, onUnmounted } from 'vue';
+  import { iconStyle, selectStyle, treeStyle } from '../../utils/my_style';
   import {
+    LeftOutlined,
+    RightOutlined,
     SearchOutlined,
     SyncOutlined,
     CloudDownloadOutlined,
-    LeftOutlined,
-    RightOutlined,
   } from '@ant-design/icons-vue';
-  import { iconStyle } from '../../utils/my_style';
   import myPag from '../../component/my_pag.vue';
+  import myBtn from '../../component/my_btn.vue';
   import localImage from '@/assets/images/cabinet.png';
   import {
     placeList,
@@ -202,6 +221,7 @@
     ]),
       (cakeChart = getChart('echarts_box8', detailOption));
   };
+
   // 定义统计图表折线图
   let foldChart: any = null;
 
@@ -234,18 +254,37 @@
   // 图片总条数
   let imgTotal = ref<number>(7);
   // 图片当前数
-  let imgCurrent = ref<number>(1);
+  let imgCurrent = ref<number>(0);
+  const carousel = ref<any>(null); // 创建一个 ref 引用来获取 a-carousel 实例
+  // 得到切换后的页码
+  const handleAfterChange = (current) => {
+    imgCurrent.value = current + 1;
+  };
 
+  // 定义切换
+  const onPreviousPage = (rowType: string) => {
+    if (rowType == 'upper') {
+      carousel.value.prev();
+    } else if (rowType == 'lower') {
+      carousel.value.next();
+    }
+  };
   // 点击详情
   const detailsRow = (row: any) => {
     console.log(row, '==========');
   };
+
+  let bannerHeight = ref<number>(0);
+  let bannerBox = ref<any>(null);
   onMounted(() => {
     // 设置列表的高度
     if (queryScroll.value) {
-      queryScrollY.value = queryScroll.value.offsetHeight - 100;
+      queryScrollY.value = queryScroll.value.offsetHeight - 120;
     }
-    selectedRange.value = onSelectedRange(6);
+    if (bannerBox.value) {
+      bannerHeight.value = bannerBox.value.offsetHeight;
+    }
+    selectedRange.value = onSelectedRange(12);
     // 设置列表数据
 
     queryList.value = onQueryList(tableTotal.value);
@@ -276,7 +315,7 @@
       width: 100%;
       height: 35%;
       padding: 12px;
-      border-radius: 12px;
+      border-radius: 5px;
       background: #fff;
 
       &-cake {
@@ -356,10 +395,10 @@
       align-items: center;
       justify-content: space-between;
       width: 100%;
-      height: calc(65% - 24px);
-      margin-top: 24px;
+      height: calc(65% - 10px);
+      margin-top: 10px;
       padding: 12px;
-      border-radius: 12px;
+      border-radius: 5px;
       background: #fff;
 
       &-query {
@@ -377,30 +416,16 @@
           &-box {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            // justify-content: space-between;
             width: 100%;
             height: 48px;
 
             > div {
               display: flex;
               align-items: center;
-              justify-content: space-between;
-              width: 30%;
+              // justify-content: space-between;
+              // width: 30%;
               height: 34px;
-
-              > .query-form-name {
-                width: 100px;
-                height: 34px;
-                color: #000;
-                font-size: 16px;
-                font-weight: 500;
-                line-height: 34px;
-              }
-
-              > .query-form-frame {
-                width: calc(100% - 110px);
-                height: 34px;
-              }
             }
           }
 
@@ -460,34 +485,24 @@
         align-items: center;
         justify-content: space-between;
         width: 33%;
-        height: 90%;
-        padding: 12px;
+        height: 100%;
         border-left: solid 2px #f8f9fa;
 
         .previous {
           display: flex;
           align-items: center;
           justify-content: flex-start;
-          width: 80px;
+          width: 60px;
           height: 100%;
         }
 
         &-center {
-          width: calc(100% - 160px);
+          width: calc(100% - 120px);
           height: 100%;
 
           &-box {
-            display: flex;
-            align-items: center;
-            justify-content: center;
             width: 100%;
             height: calc(100% - 48px);
-
-            > img {
-              width: 100%;
-              height: 100%;
-              object-fit: contain;
-            }
           }
 
           &-footer {
@@ -541,7 +556,7 @@
           display: flex;
           align-items: center;
           justify-content: flex-end;
-          width: 80px;
+          width: 60px;
           height: 100%;
         }
       }
@@ -551,26 +566,23 @@
   .details-box {
     cursor: pointer;
   }
-
-  ::v-deep .ant-picker {
-    width: 100% !important;
-  }
-
-  ::v-deep .ant-select {
-    width: 100% !important;
-  }
-
-  ::v-deep .ant-select-selector {
+  ::v-deep(.ant-select-selector) {
     max-height: 64px !important;
     overflow: auto !important;
   }
 
-  ::v-deep .ant-table-row:nth-child(2n) {
-    background-color: #f6f9fb !important;
-    color: #484646 !important;
+  ::v-deep(.ant-table-row:nth-child(2n)) {
+    background-color: #f9fbfd !important;
+    color: #333333 !important;
+    font-size: 14px !important;
   }
-
-  ::v-deep .ant-table-thead > tr > th {
+  ::v-deep(.ant-table-thead > tr > th) {
     background-color: #f0f8fc !important;
+    color: #000000 !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+  }
+  ::v-deep(.ant-table-pagination) {
+    margin-top: 20px !important;
   }
 </style>

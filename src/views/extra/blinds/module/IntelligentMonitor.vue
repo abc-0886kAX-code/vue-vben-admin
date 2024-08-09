@@ -6,54 +6,51 @@
       </div>
 
       <div class="monitor-box-artificial-from">
-        <div>
+        <div class="query-form-box">
           <div class="query-form-name">请选择地点树:</div>
-          <div class="query-form-frame">
-            <a-tree-select
-              v-model:value="treeList"
-              :tree-data="treeData"
-              allow-clear
-              placeholder="请选择"
-              @select="myHandleSelect"
-            />
-          </div>
+          <a-tree-select
+            v-model:value="treeList"
+            :style="treeStyle"
+            :tree-data="treeData"
+            allow-clear
+            placeholder="请选择"
+            @select="myHandleSelect"
+          />
         </div>
-        <div>
+
+        <div class="query-form-box">
           <div class="query-form-name">请选择机柜:</div>
-          <div class="query-form-frame">
-            <a-select
-              :value="cabinetValue"
-              style="width: 100%"
-              placeholder="请选择告警级别"
-              :options="cabinetOptions"
-              @change="cabinetChange"
-            />
-          </div>
+          <a-select
+            :style="selectStyle"
+            :value="cabinetValue"
+            placeholder="请选择告警级别"
+            :options="cabinetOptions"
+            @change="cabinetChange"
+          />
         </div>
-        <div>
+
+        <div class="query-form-box">
           <div class="query-form-name">设置置信度:</div>
-          <div class="query-form-frame">
-            <a-select
-              :value="confidenceValue"
-              style="width: 100%"
-              placeholder="请选择告警级别"
-              :options="confidenceOptions"
-              @change="confidenceChange"
-            />
-          </div>
+          <a-select
+            :style="selectStyle"
+            :value="confidenceValue"
+            placeholder="请选择置信度"
+            :options="confidenceOptions"
+            @change="confidenceChange"
+          />
         </div>
-        <div>
+
+        <div class="query-form-box">
           <div class="query-form-name">设置IOU:</div>
-          <div class="query-form-frame">
-            <a-select
-              :value="IOUValue"
-              style="width: 100%"
-              placeholder="请选择告警级别"
-              :options="IOUOptions"
-              @change="IOUChange"
-            />
-          </div>
+          <a-select
+            :style="selectStyle"
+            :value="IOUValue"
+            placeholder="请选择IOU"
+            :options="IOUOptions"
+            @change="IOUChange"
+          />
         </div>
+
         <div class="query-form-upload">
           <div class="query-form-upload-name">导入模版样例:</div>
           <div class="query-form-upload-frame"><myUnloadFile /> </div>
@@ -63,9 +60,12 @@
       <div class="monitor-box-artificial-list">
         <div class="monitor-box-artificial-list-img"><myUnloadImg /> </div>
         <div class="monitor-box-artificial-list-btn">
-          <a-button :icon="h(ScanOutlined)" type="primary" @click="onStartIdentify"
+          <!-- <a-button :icon="h(ScanOutlined)"  type="primary" @click="onStartIdentify"
             >开始识别</a-button
-          >
+          > -->
+          <myBtn :btnType="false" :btnName="'开始识别'" @determine="onStartIdentify">
+            <ScanOutlined />
+          </myBtn>
         </div>
       </div>
     </div>
@@ -77,7 +77,10 @@
           </div>
         </div>
         <div class="monitor-box-distinguish-title-export">
-          <a-button :icon="h(CloudDownloadOutlined)" type="primary">导出</a-button>
+          <!-- <a-button :icon="h(CloudDownloadOutlined)" type="primary">导出</a-button> -->
+          <myBtn :btnType="false" :btnName="'导出'">
+            <CloudDownloadOutlined />
+          </myBtn>
         </div>
       </div>
       <div class="monitor-box-distinguish-table" ref="importScroll">
@@ -103,14 +106,16 @@
       </div>
 
       <div class="monitor-box-distinguish-footer">
-        <a-button :icon="h(FileAddOutlined)" type="primary">提交</a-button>
+        <myBtn :btnType="false" :btnName="'提交'">
+          <FileAddOutlined />
+        </myBtn>
       </div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
   import myTitle from '../../component/my_title.vue';
-  import { ref, h, onMounted } from 'vue';
+  import { ref, onMounted } from 'vue';
   import {
     ScanOutlined,
     CloudDownloadOutlined,
@@ -119,7 +124,8 @@
   } from '@ant-design/icons-vue';
   import myUnloadImg from '../../component/my_unload_img.vue';
   import myUnloadFile from '../../component/my_unload_file.vue';
-  import { deleteStyle } from '../../utils/my_style';
+  import { deleteStyle, selectStyle, treeStyle } from '../../utils/my_style';
+  import myBtn from '../../component/my_btn.vue';
   import localImage from '@/assets/images/cabinet.png';
   import {
     manualTreeData,
@@ -131,9 +137,9 @@
   // 定义查询地点树
   let treeList = ref<string>('');
   /*  定义查询地点树列表数据
-      只能选中机房那一层
-      机柜的下拉框数据是由列表中cabinetChildren传过去的
- */
+       只能选中机房那一层
+       机柜的下拉框数据是由列表中cabinetChildren传过去的
+  */
   let treeData = manualTreeData;
 
   // 定义选择机柜的文字
@@ -184,6 +190,7 @@
   // 删除当前这一条数据
   const deleteRow = (row: any) => {
     console.log(row, '===========');
+    importList.value = importList.value.filter((item) => item.key !== row.key);
   };
   const onStartIdentify = () => {
     console.log('开始识别');
@@ -196,10 +203,6 @@
     if (importScroll.value) {
       importScrollY.value = importScroll.value.offsetHeight - 100;
     }
-
-    // this.$refs.radio.$children.forEach((item) => {
-    //     item.$refs.radio.removeAttribute("aria-hidden");
-    // });
   });
 </script>
 <style scoped lang="less">
@@ -215,16 +218,15 @@
 
     &-artificial {
       box-sizing: border-box;
-      width: calc(50% - 12px);
+      width: calc(50% - 5px);
       height: 100%;
       padding: 12px;
-      border-radius: 12px;
+      border-radius: 5px;
       background: #fff;
 
       &-from {
         display: flex;
         flex-wrap: wrap;
-        justify-content: space-between;
         width: 100%;
         height: 188px;
         margin-top: 12px;
@@ -233,23 +235,7 @@
         > div {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          width: 49%;
           height: 34px;
-
-          > .query-form-name {
-            width: 100px;
-            height: 34px;
-            color: #000;
-            font-size: 16px;
-            font-weight: 500;
-            line-height: 34px;
-          }
-
-          > .query-form-frame {
-            width: calc(100% - 110px);
-            height: 34px;
-          }
         }
 
         > .query-form-upload {
@@ -298,10 +284,10 @@
 
     &-distinguish {
       box-sizing: border-box;
-      width: calc(50% - 12px);
+      width: calc(50% - 5px);
       height: 100%;
       padding: 12px;
-      border-radius: 12px;
+      border-radius: 5px;
       background: #fff;
 
       &-title {
@@ -344,26 +330,22 @@
     height: 100%;
     object-fit: contain;
   }
-
-  ::v-deep .ant-picker {
-    width: 100% !important;
-  }
-
-  ::v-deep .ant-select {
-    width: 100% !important;
-  }
-
-  ::v-deep .ant-select-selector {
+  ::v-deep(.ant-select-selector) {
     max-height: 64px !important;
     overflow: auto !important;
   }
-
-  ::v-deep .ant-table-row:nth-child(2n) {
-    background-color: #f6f9fb !important;
-    color: #484646 !important;
+  ::v-deep(.ant-table-row:nth-child(2n)) {
+    background-color: #f9fbfd !important;
+    color: #333333 !important;
+    font-size: 14px !important;
   }
-
-  ::v-deep .ant-table-thead > tr > th {
+  ::v-deep(.ant-table-thead > tr > th) {
     background-color: #f0f8fc !important;
+    color: #000000 !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+  }
+  ::v-deep(.ant-table-pagination) {
+    margin-top: 20px !important;
   }
 </style>

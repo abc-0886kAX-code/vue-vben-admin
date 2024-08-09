@@ -34,10 +34,14 @@
         <div class="moving-box-left-query-btn">
           <!-- 查询条件按钮 -->
           <div class="use-btn">
-            <myBtn :btnType="'query'" />
+            <myBtn :btnType="false" :btnName="'查询'">
+              <SearchOutlined />
+            </myBtn>
           </div>
           <div class="use-btn">
-            <myBtn :btnType="'reset'" />
+            <myBtn :btnType="true" :btnName="'重置'">
+              <SyncOutlined />
+            </myBtn>
           </div>
         </div>
       </div>
@@ -47,7 +51,9 @@
         </div>
         <div class="moving-box-left-list-export">
           <div class="use-btn">
-            <myBtn :btnType="'export'" @determine="downloadExcel" />
+            <myBtn :btnType="false" :btnName="'导出'" @determine="downloadExcel">
+              <CloudDownloadOutlined />
+            </myBtn>
           </div>
         </div>
         <div class="moving-box-left-list-box" ref="scrollBox">
@@ -99,7 +105,7 @@
   import myBtn from '../../component/my_btn.vue';
   import { exportExcel } from '../../utils/tool';
   import { levelList, alarmHeader, trendList, simulateAlarmList } from '../../utils/simulation';
-
+  import { SearchOutlined, SyncOutlined, CloudDownloadOutlined } from '@ant-design/icons-vue';
   import { detailOption, typeOption, timeOption, getChart } from '../../echarts/detail_echarts';
   import { selectStyle, inputStyle } from '../../utils/my_style';
   // 定义告警详情图表颜色
@@ -239,7 +245,7 @@
         width: 100%;
         height: 150px;
         padding: 12px;
-        border-radius: 12px;
+        border-radius: 5px;
         background: #fff;
 
         &-form {
@@ -260,10 +266,10 @@
       &-list {
         box-sizing: border-box;
         width: 100%;
-        height: calc(100% - 162px);
-        margin-top: 12px;
+        height: calc(100% - 160px);
+        margin-top: 10px;
         padding: 12px;
-        border-radius: 12px;
+        border-radius: 5px;
         background: #fff;
 
         > .my-title {
@@ -299,18 +305,20 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      width: 39%;
+      width: calc(40% - 10px);
       height: 100%;
-      margin-left: 1%;
+      margin-left: 10px;
 
       &-detail {
         position: relative;
         box-sizing: border-box;
         width: 100%;
-        height: 32%;
+        // height: calc(33.34% - 10px);
+        flex: 1;
         padding: 12px;
-        border-radius: 12px;
+        border-radius: 5px;
         background: #fff;
+        margin-top: 10px;
 
         &-box {
           width: 100%;
@@ -325,6 +333,9 @@
           width: 100px;
           height: 36px;
         }
+      }
+      &-detail:first-of-type {
+        margin-top: 0px;
       }
     }
   }

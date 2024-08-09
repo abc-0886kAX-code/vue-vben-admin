@@ -1,28 +1,15 @@
 <template>
   <div class="btn-box">
-    <a-button type="primary" v-if="btnType == 'query'" @click="onDetermine">
+    <a-button type="primary" :ghost="btnType" @click="onDetermine">
       <template #icon>
-        <SearchOutlined :style="btnIconStyle" />
+        <slot :style="btnIconStyle"></slot>
       </template>
-      <span :style="btnTextStyle">查询</span>
-    </a-button>
-    <a-button type="primary" ghost v-else-if="btnType == 'reset'" @click="onDetermine">
-      <template #icon>
-        <SyncOutlined :style="btnIconStyle" />
-      </template>
-      <span :style="btnTextStyle">重置</span>
-    </a-button>
-    <a-button type="primary" v-else-if="btnType == 'export'" @click="onDetermine">
-      <template #icon>
-        <CloudDownloadOutlined :style="btnIconStyle" />
-      </template>
-      <span :style="btnTextStyle">导出</span>
+      <span :style="btnTextStyle">{{ btnName }}</span>
     </a-button>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { SearchOutlined, SyncOutlined, CloudDownloadOutlined } from '@ant-design/icons-vue';
   import { defineProps, defineEmits } from 'vue';
 
   const emit = defineEmits(['determine']);
@@ -31,7 +18,8 @@
   // reset  重置按钮
   // export   导出按钮
   defineProps({
-    btnType: { type: String, default: 'query' },
+    btnType: { type: Boolean, default: false },
+    btnName: { type: String, default: '查询' },
   });
   const btnIconStyle: any = {
     fontSize: '14px',
@@ -49,7 +37,6 @@
   .btn-box {
     display: flex;
     align-items: center;
-    width: 100%;
     height: 100%;
     font-size: 12px;
   }

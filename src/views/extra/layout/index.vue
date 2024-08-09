@@ -81,14 +81,14 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
-    padding: 10px 20px;
+    padding: 10px;
     box-sizing: border-box;
     background-color: #c7e6fb;
     &-menu {
       width: 15%;
       height: 100%;
       background-color: #fff;
-      border-radius: 10px;
+      border-radius: 5px;
       &-item {
         padding: 20px;
         box-sizing: border-box;
@@ -102,7 +102,7 @@
       }
     }
     &-body {
-      width: 83%;
+      width: calc(85% - 10px);
       height: 100%;
     }
   }

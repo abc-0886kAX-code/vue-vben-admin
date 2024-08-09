@@ -6,7 +6,7 @@
       accept=".doc,.docx,.xml,.xlsx,.xls"
       @change="onHandleChange"
     >
-      <a-button type="primary"> 选择文件 </a-button>
+      <a-button type="primary"><span :style="btnTextStyle">选择文件</span> </a-button>
     </a-upload>
     <div class="not_select" v-if="onFlag()">未选中任何文件</div>
   </div>
@@ -26,6 +26,9 @@
     //   url: 'http://www.baidu.com',
     // },
   ]);
+  const btnTextStyle: any = {
+    fontSize: '12px',
+  };
   const onFlag = () => {
     if (fileList.value.length == 0) {
       return true;
@@ -35,7 +38,7 @@
   };
   const onHandleChange = (info: any) => {
     console.log(info, 'info');
-    emit('previousPage', { info: info.fileList });
+    emit('passList', { info: info.fileList });
   };
 </script>
 
@@ -47,23 +50,26 @@
     height: 100%;
     position: relative;
   }
+  ::v-deep(.ant-btn-primary) {
+    background: #518ce5;
+  }
 
-  ::v-deep .ant-upload {
+  ::v-deep(.ant-upload) {
     margin-right: 12px;
   }
 
-  ::v-deep .ant-upload-wrapper {
+  ::v-deep(.ant-upload-wrapper) {
     display: flex;
     align-items: center;
   }
 
-  ::v-deep .ant-upload-list {
+  ::v-deep(.ant-upload-list) {
     width: 100%;
     height: 70px !important;
     overflow-y: auto !important;
   }
 
-  ::v-deep .ant-upload-list-item {
+  ::v-deep(.ant-upload-list-item) {
     height: 32px !important;
     font-size: 16px !important;
   }
